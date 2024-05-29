@@ -12,7 +12,8 @@ void start_server() {
     char buffer[BUFFER_SIZE];
     ClientInfo client_info;
 
-    // Create the server FIFO
+    // Remove any existing server FIFO and create a new one
+    unlink(SERVER_PATH);
     if (mkfifo(SERVER_PATH, 0666) == -1) {
         perror("Failed to create server FIFO");
         exit(1);
