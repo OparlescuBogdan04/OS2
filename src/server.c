@@ -7,56 +7,60 @@
 #include <sys/stat.h>
 #include "chat_server.h"
 
-void start_server()
-{
+void start_server() {
     int server_fd, client_fd;
     char buffer[BUFFER_SIZE];
     ClientInfo client_info;
 
-    // Create the server file
-    if (mkfifo(SERVER_path, 0666) == -1)
-    {
-        perror("Server file creation Error!\n");
-        exit(111);
+    // Create the server FIFO
+    if (mkfifo(SERVER_PATH, 0666) == -1) {
+        perror("Failed to create server FIFO");
+        exit(1);
     }
 
     printf("Server started. Waiting for clients...\n");
 
-    // Open the server file for reading
-    server_fd = open(SERVER_path, O_RDONLY);
-    if (server_fd == -1)
-    {
-        perror("Server fd Error!\n");
-        exit(222);
+    // Open the server FIFO for reading and writing
+    server_fd = open(SERVER_PATH, O_RDWR);
+    if (server_fd == -1) {
+        perror("Failed to open server FIFO");
+        unlink(SERVER_PATH);
+        exit(1);
     }
 
-    while (1)
-    {
-        // Read client information from the server file
-        if (read(server_fd, &client_info, sizeof(ClientInfo)) == -1)
-        {
-            perror("Reading error!\n");
+    while (1) {
+        // Read client information from the server FIFO
+        if (read(server_fd, &client_info, sizeof(ClientInfo)) == -1) {
+            perror("Failed to read from server FIFO");
             continue;
         }
 
-        // Open the client server file for writing
-        client_fd = open(client_info.fifo_name, O_WRONLY);
-        if (client_fd == -1)
-        {
-            perror("Client side Error!\n");
+        // Open the client FIFO for reading and writing
+        client_fd = open(client_info.fifo_name, O_RDWR);
+        if (client_fd == -1) {
+            perror("Failed to open client FIFO");
             continue;
         }
 
-        // Send a message to the client
-        snprintf(buffer, BUFFER_SIZE, "Hello, client %d!", client_info.client_id);
-        if (write(client_fd, buffer, strlen(buffer) + 1) == -1)
-        {
-            perror("Writing Error!\n");
+        while (1) {
+            // Read message from the client
+            if (read(client_fd, buffer, BUFFER_SIZE) == -1) {
+                perror("Failed to read from client FIFO");
+                break;
+            }
+            printf("Received from client %d: %s\n", client_info.client_id, buffer);
+
+            // Send response to the client
+            snprintf(buffer, BUFFER_SIZE, "Echo from server: %s", buffer);
+            if (write(client_fd, buffer, strlen(buffer) + 1) == -1) {
+                perror("Failed to write to client FIFO");
+                break;
+            }
         }
 
         close(client_fd);
     }
 
     close(server_fd);
-    unlink(SERVER_path);
+    unlink(SERVER_PATH);
 }
