@@ -25,7 +25,7 @@ void start_client()
     }
 
     // Open server file for writing
-    server_fd = open(SERVER_path, O_WRONLY);
+    server_fd = open(SERVER_PATH, O_WRONLY);
     if (server_fd == -1)
     {
         perror("Server fd Error!\n");

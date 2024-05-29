@@ -7,8 +7,8 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        perror("Usage: %s <option>\n", argv[0]);
-        perror("options:\n'server' or '1'\n'client' or '2'\n\n");
+        fprintf(stderr,"Usage: %s <option>\n", argv[0]);
+        fprintf(stderr,"options:\n'server' or '1'\n'client' or '2'\n\n");
         return 1;
     }
 
@@ -24,6 +24,6 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    perror("Unknown option: %s\n", argv[1]);
+    fprintf(stderr,"Unknown option: %s\n", argv[1]);
     return 1;
 }
