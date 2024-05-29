@@ -8,7 +8,7 @@
 #define CLIENT_MAX_NAME_LEN 64
 
 
-typedef struct
+typedef struct Client
 {
     int pipe_fd[2];
 } Client;
