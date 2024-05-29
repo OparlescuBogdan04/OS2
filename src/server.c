@@ -1,39 +1,62 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include "chat.h"
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "chat_server.h"
 
 void start_server()
 {
-    int pipe_fd[2];
-    if (pipe(pipe_fd) == -1)
+    int server_fd, client_fd;
+    char buffer[BUFFER_SIZE];
+    ClientInfo client_info;
+
+    // Create the server file
+    if (mkfifo(SERVER_path, 0666) == -1)
     {
-        perror("Pipe Error!\n");
-        exit(999); //server error
+        perror("Server file creation Error!\n");
+        exit(111);
     }
 
-    printf("Server started!\nWaiting for clients...\n\n");
+    printf("Server started. Waiting for clients...\n");
+
+    // Open the server file for reading
+    server_fd = open(SERVER_path, O_RDONLY);
+    if (server_fd == -1)
+    {
+        perror("Server fd Error!\n");
+        exit(222);
+    }
 
     while (1)
     {
-        byte buffer[BUFFER_SIZE];
-        int bytes_read = read(pipe_fd[0], buffer, BUFFER_SIZE);
-        if (bytes_read == -1)
+        // Read client information from the server file
+        if (read(server_fd, &client_info, sizeof(ClientInfo)) == -1)
         {
-            perror("Reading Error!\n");
-            close(pipe_fd[0]);
-            close(pipe_fd[1]);
-            exit(EXIT_FAILURE);
+            perror("Reading error!\n");
+            continue;
         }
 
-        buffer[bytes_read] = '\0';
-        printf("Received: %s\n", buffer);
+        // Open the client server file for writing
+        client_fd = open(client_info.fifo_name, O_WRONLY);
+        if (client_fd == -1)
+        {
+            perror("Client side Error!\n");
+            continue;
+        }
 
-        if (strcmp(buffer, "exit") == 0)
-            break;
+        // Send a message to the client
+        snprintf(buffer, BUFFER_SIZE, "Hello, client %d!", client_info.client_id);
+        if (write(client_fd, buffer, strlen(buffer) + 1) == -1)
+        {
+            perror("Writing Error!\n");
+        }
+
+        close(client_fd);
     }
 
-    close(pipe_fd[0]);
-    close(pipe_fd[1]);
+    close(server_fd);
+    unlink(SERVER_path);
 }

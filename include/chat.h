@@ -1,13 +1,12 @@
 #ifndef CHAT_h
 #define CHAT_h
 
-#define MAX_CLIENTS 4
+#define byte unsigned char
 #define BUFFER_SIZE 1024
 
-//utility typedefs
-#define true 1
-#define false 0
-#define byte unsigned char
+#define SERVER_path "server"
+#define CLIENT_MAX_NAME_LEN 64
+
 
 typedef struct
 {
