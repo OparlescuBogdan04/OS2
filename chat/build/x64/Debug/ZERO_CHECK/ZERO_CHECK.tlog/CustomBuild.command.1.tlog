@@ -1,0 +1,10 @@
+^C:\USERS\REEZY\DOWNLOADS\CHAT\BUILD\CMAKEFILES\16D2D65C01BEA1B2CFB44826EF0B23FE\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Reezy/Downloads/chat -BC:/Users/Reezy/Downloads/chat/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Reezy/Downloads/chat/build/TerminalChat.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
